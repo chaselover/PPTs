@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/moon.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section id="transitions">
+                <a href="?transition=none#/transitions">None</a> -
+                <a href="?transition=fade#/transitions">Fade</a> -
+                <a href="?transition=slide#/transitions">Slide</a> -
+                <a href="?transition=convex#/transitions">Convex</a> -
+                <a href="?transition=concave#/transitions">Concave</a> -
+                <a href="?transition=zoom#/transitions">Zoom</a>
+                </h5>
+            </section>
+            <section data-auto-animate>
+                <h2>소프트웨어<br> 공학적 설계</h2>
+            </section>
+            <section data-auto-animate>
+                <h2>소프트웨어<br> 공학적 <span style="color: yellow;">설계</span></h2>
+            </section>
+            <br>
+            <section data-auto-animate>
+                <h1>What is <br><span style="color: yellow;">Software?</span></h1>
+            </section>
+            <section data-auto-animate>
+                <h1 style="color: yellow;">What?</h1>
+            </section>
+            <section data-auto-animate>
+                <h2>What is <span style="color: yellow;">Engineering?</span></h2>
+            </section>
+            <section data-auto-animate>
+                <p>
+                    공업적인 생산에 응용하여 <br>
+                    생산력과 <span style="color: yellow;">생산품</span>의 <br>
+                    <span style="color: yellow;">성능을 향상</span>·발전시키기 위한 <br>
+                    과학 기술의 체계적인 학문.<br>
+                    -Wikipedia-
+                </p>
+            </section>
+            <section data-auto-animate>
+                <h3>
+                    <span style="color: yellow;">생산품</span>의 <span style="color: yellow;">성능</span>을 향상<br>
+                </h3>
+            </section>
+            <section data-auto-animate>
+                <h3>
+                    그럼 생산품의 성능이 뭔데?
+                </h3>
+            </section>
+            <section data-auto-animate>
+                <h3>
+                    그럼 생산품의 성능이 뭔데?
+                </h3>
+                <ol>
+                    <li>복잡도가 낮은</li>
+                    <li>개발 비용, 중복이 최소화된</li>
+                    <li>개발 기간이 짧은</li>
+                    <li>대규모 프로젝트에도 적용가능한</li>
+                    <li>신뢰성이 보장되는</li>
+                    <li>표준화 되어 작업 효율을 보장하는</li>
+                </ol>
+            </section>
+            <section data-auto-animate>
+                <h3>
+                    그럼 생산품의 성능이 뭔데?
+                </h3>
+                <p>즉, 소프트웨어 공학은 <span style="color: yellow;">품질 좋은</span> 소프트웨어를 <span style="color: yellow;">최소
+                        비용</span>으로 <span style="color: yellow;">계획된 일정</span>에 맞추어 개발하는 것이다.</p>
+            </section>
+            <section data-auto-animate>
+                <h3 style='font-weight: bolder;'>
+                    어떻게?
+                </h3>
+                <ul>
+                    <li>프로세스와 방법론</li>
+                    <li>프로젝트 계획과 관리</li>
+                    <li>요구 분석</li>
+                    <li>요구 모델링</li>
+                    <li>설계</li>
+                    <li>아키텍처서 설계와 패턴</li>
+                    <li>UI 설계</li>
+                    <li>코딩</li>
+                    <li>테스트</li>
+                    <li>유지보수</li>
+                    <li>품질 보증</li>
+                </ul>
+            </section>
+            <section data-auto-animate>
+                <h3 style='font-weight: bolder;'>
+                    어떻게?
+                </h3>
+                <ul>
+                    <li>프로세스와 방법론</li>
+                    <li>프로젝트 계획과 관리</li>
+                    <li>품질 보증</li>
+                </ul>
+            </section>
+            <section data-auto-animate>
+                <h2 style='font-weight: bolder;'>프로세스와 방법론</h2>
+            </section>
+            <section data-auto-animate>
+                <h2 style='font-weight: bolder;'>프로세스와 방법론</h2>
+                <p>
+                    프로세스란?    WHAT <br>
+                    방법론이란?    HOW
+                </p>
+            </section>
+            <section>
+                <h2 style='font-weight: bolder;'>프로세스</h2>
+            </section>
+            <section>
+                <section>
+                    <h2>배열 슬라이싱</h2>
+                </section>
+                <section style="display: flex;align-content: center;justify-content: center;">
+                    <img src="/img/일차원배열2슬라이싱.PNG" alt="map" style="width: 70%;">
+
+                </section>
+                <section>
+                    <img src="/img/슬라이싱코드.PNG" alt="map" style="width: 35%;">
+                </section>
+                <section>
+                    <img src="/img/기차가어둠을헤치고.PNG" alt="map" style="width: 70%;">
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>Deque.rotate</h2>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+deq = collections.deque(['a', 'b', 'c', 'd', 'e'])
+deq.rotate(1)
+
+
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+import collections
+deq = collections.deque(['a', 'b', 'c', 'd', 'e'])
+deq.rotate(1)
+print('deq >>', ' '.join(deq))
+deq2 = collections.deque(['a', 'b', 'c', 'd', 'e'])
+deq2.rotate(2)
+print('deq2 >>', ' '.join(deq2))
+deq3 = collections.deque(['a', 'b', 'c', 'd', 'e'])
+deq3.rotate(-1)
+print('deq3 >>', ' '.join(deq3))
+deq4 = collections.deque(['a', 'b', 'c', 'd', 'e'])
+deq4.rotate(-2)
+print('deq4 >>', ' '.join(deq4))
+'''
+결과
+deq >> e a b c d
+deq2 >> d e a b c
+deq3 >> b c d e a
+deq4 >> c d e a b
+
+  </code></pre>
+                </section>
+            </section>
+            <section data-auto-animate>
+                <h1 style='color: cornflowerblue;'>'Dimention-2'</h1>
+            </section>
+            <section data-auto-animate>
+                <h1 style='color: cornflowerblue;'>'Dimention-2'</h1>
+                <ul>
+                    <li>90도 회전 반복</li>
+                    <li>따로 회전</li>
+                </ul>
+            </section>
+            <section>
+                <section>
+                    <h2>90도 회전 반복</h2>
+                </section>
+                <section>
+                    <img src="/img/2차원회전그림.png" alt="map" style="width: 80%;">
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def rotate(key, N):
+
+    def getNewValue(i, j, x, y):
+        key[j , N-i-1] = key[i ,j]
+        if (i == x and j == y): 
+            return
+        getNewValue(N-j-1, i, x, y)
+
+    for i in range(0, int(N/2)):
+        for j in range(i, N-i-1):
+            print(i,j )
+            tmp = key[i,j]
+            getNewValue(N-1-j, i, i, j)
+            key[j, N-1-i] = tmp
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def zip_rotate(original):
+    rotated = [k[::-1] for k in zip(*original)]
+    return rotated
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def zip_rotate(original):
+    0 = np.array(original)
+    rotated = np.ndarray.tolist(np.rot90(o,3))
+    return rotated
+  </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>따로 회전</h2>
+                </section>
+                <section>
+                    <img src="/img/90도.png" alt="map" style="width: 80%;">
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+ret[c][N-1-r] = m[r][c]
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def rotate_90(m):
+    N = len(m)
+    ret = [[0] * N for _ in range(N)]
+
+    for r in range(N):
+        for c in range(N):
+            ret[c][N-1-r] = m[r][c]
+    return ret
+  </code></pre>
+                </section>
+
+                <section>
+                    <img src="/img/180도.png" alt="map" style="width: 80%;">
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+ret[N-1-r][N-1-c] = m[r][c]
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def rotate_180(m):
+    N = len(m)
+    ret = [[0] * N for _ in range(N)]
+
+    for r in range(N):
+        for c in range(N):
+            ret[N-1-r][N-1-c] = m[r][c]
+
+    return ret
+  </code></pre>
+                </section>
+                <section>
+                    <img src="/img/270도.png" alt="map" style="width: 80%;">
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+ret[N-1-c][r] = m[r][c]
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def rotate_270(m):
+    N = len(m)
+    ret = [[0] * N for _ in range(N)]
+
+    for r in range(N):
+        for c in range(N):
+            ret[N-1-c][r] = m[r][c]
+    return ret
+  </code></pre>
+                </section>
+                <section data-auto-animate>
+                    <pre data-id="code-animation"><code data-trim data-line-numbers>
+
+def rotate(m, d):
+    N = len(m)
+    ret = [[0] * N for _ in range(N)]
+
+    if d % 4 == 1:
+        for r in range(N):
+            for c in range(N):
+                ret[c][N-1-r] = m[r][c]
+    elif d % 4 == 2:
+        for r in range(N):
+            for c in range(N):
+                ret[N-1-c][N-1-r] = m[r][c]
+    elif d % 4 == 3:
+        for r in range(N):
+            for c in range(N):
+                ret[N-1-c][r] = m[r][c]
+    else:
+        for r in range(N):
+            for c in range(N):
+                ret[r][c] = m[r][c]
+
+    return ret
+  </code></pre>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>좀 더 생각해보자</h2>
+                </section>
+                <section>
+                    <img src="/img/2차원 배열 회전 심화.png" alt="map" style="width: 80%;">
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>배열 뒤집기</h2>
+                    <section>
+                        <img src="/img/배열뒤집기.png" alt="map" style="width: 80%;">
+                    </section>
+                </section>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+        // More info about initialization & config:
+        // - https://revealjs.com/initialization/
+        // - https://revealjs.com/config/
+        Reveal.initialize({
+            hash: true,
+
+            // Learn about plugins: https://revealjs.com/plugins/
+            plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+        });
+    </script>
+</body>
+
+</html>

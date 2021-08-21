@@ -2,7 +2,7 @@
 
 ## 1. U_Values 프로젝트
 
-https://chaselover.github.io/PPTs/
+[U_Values 깃헙 페이지](https://chaselover.github.io/PPTs/)
 
 ![image](https://user-images.githubusercontent.com/79824434/129450432-12020ff0-7463-41eb-97be-0fa36fc9bb4c.png)
 

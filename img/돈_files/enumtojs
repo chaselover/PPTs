@@ -1,0 +1,36 @@
+var bugs = bugs || {};
+bugs.java = bugs.java || {};
+bugs.java.enums = {};
+bugs.java.enums.MusicpdInfo = bugs.java.enums.MusicpdInfo || {};
+bugs.java.enums.MusicpdInfo.STATUS = {
+	TEMP : 'TEMP',
+	OK : 'OK',
+	REJECT : 'REJECT',
+	DEFER : 'DEFER',
+	DEL : 'DEL',
+	WAITING : 'WAITING',
+	READY : 'READY',
+	CANCEL : 'CANCEL'
+};
+bugs.java.enums.MusicpdInfo = bugs.java.enums.MusicpdInfo || {};
+bugs.java.enums.MusicpdInfo.PD_TP = {
+	PD : { title : '일반PD', comment : '일반유저 PD' },
+	BRAND : { title : '브랜드PD', comment : '고급 PD ??' },
+	BUGS_YEARS : { title : '연도별PD', comment : '연도별 뮤직PD앨범 작성하는 벅스내부 PD' },
+	INNER : { title : '내부PD', comment : '내부PD' },
+	PRO : { title : '전문가PD', comment : '전문가PD' },
+	CO_MUSICMATE : { title : '뮤직메이트', comment : '협력사 - 뮤직메이트' }
+};
+bugs.java.enums.UniContent = bugs.java.enums.UniContent || {};
+bugs.java.enums.UniContent.CORNER_TYPE = {
+	FOCUS : 'FOCUS',
+	INTERVIEW : 'INTERVIEW',
+	NONE : 'NONE',
+	GENRE : 'GENRE',
+	CONCERT : 'CONCERT',
+	HIDDEN : 'HIDDEN',
+	PLAYLIST : 'PLAYLIST',
+	MONTHLY : 'MONTHLY',
+	BUGSTV : 'BUGSTV',
+	MASKSING : 'MASKSING'
+};

@@ -1,0 +1,392 @@
+	if ("undefined" == typeof openalbum)
+	{
+		esalbumlike = {
+			tracks : "",
+			str_tracks : "",
+			dnl_tracks : "",
+			playlist_id : 0,
+			keyword_id : 0,
+			msrl : 0,
+			page : 1,
+			sort : "",
+			sort_type : "DESC",
+			last : false,
+			ealbumHtml : "",
+			asideFavorWeekHtml : "",
+			asideFavorMonthHtml : "",
+			rank_year : "",
+			rank_month : "",
+			rank_week : "",
+			desciptionView : function (obj)
+			{
+				if(obj.parent().parent().find("dl").css("display") == "none") {
+					obj.parent().parent().find("p").hide('blind', 'normal', {}, function() { obj.parent().parent().find("dl").show('blind'); });
+					obj.parent().addClass("close");
+					obj.text("앨범 설명 닫기");
+				} else {
+					obj.parent().parent().find("dl").hide('blind', 'normal', {}, function() { obj.parent().parent().find("p").show('blind'); });
+					obj.parent().removeClass("close");
+					obj.text("앨범 설명 더보기");
+				}
+			},
+			selectAll : function ()
+			{
+				if($(".track .oneclickAction .check .checkbox > INPUT").attr("checked")) {
+					$(".track .oneclickAction .check").removeClass("click");
+					$(".track .oneclickAction .check .checkbox > INPUT").attr("checked", false);
+					
+					$(".track .trackList").find("li").each(function() {
+						$(this).removeClass("rowSelect");
+						$(this).find(".check .checkbox > INPUT").attr("checked", false);
+					});
+				} else {
+					$(".track .oneclickAction .check").addClass("click");
+					$(".track .oneclickAction .check .checkbox > INPUT").attr("checked", true);
+
+					$(".track .list").find("li").each(function() {
+						$(this).addClass("rowSelect");
+						$(this).find(".check .checkbox > INPUT").attr("checked", true);
+					});
+				}
+				
+				openalbum.setTracks();
+			},
+			selectOne : function (obj)
+			{
+				if (obj.find("INPUT").attr("checked")) {
+					obj.parent().parent().removeClass("rowSelect");
+					obj.find("INPUT").attr("checked", false);
+				} else {
+					obj.parent().parent().addClass("rowSelect");
+					obj.find("INPUT").attr("checked", true);
+				}
+				
+				openalbum.setTracks();
+			},
+			setTracks : function ()
+			{
+				openalbum.tracks = "";
+				openalbum.str_tracks = "";
+				openalbum.dnl_tracks = "";
+				$(".track .list").find("li").each(function() {
+					if ($(this).find(".check .checkbox > INPUT").attr("checked")) { 
+						if (openalbum.tracks == "") openalbum.tracks = $(this).find(".check .checkbox > INPUT").val();
+						else	openalbum.tracks = openalbum.tracks + "," + $(this).find(".check .checkbox > INPUT").val();
+						
+						if (typeof $(this).find(".btnAction input:hidden[name=_isStream]:not(:disabled)").val() != "undefined") {
+							if (openalbum.str_tracks == "") openalbum.str_tracks = $(this).find(".btnAction input:hidden[name=_isStream]:not(:disabled)").val();
+							else	openalbum.str_tracks = openalbum.str_tracks + "," + $(this).find(".btnAction input:hidden[name=_isStream]:not(:disabled)").val();
+						}
+						
+						if (typeof $(this).find(".btnAction input:hidden[name=_isDown]:not(:disabled)").val() != "undefined") {
+							if (openalbum.dnl_tracks == "") openalbum.dnl_tracks = $(this).find(".btnAction input:hidden[name=_isDown]:not(:disabled)").val();
+							else	openalbum.dnl_tracks = openalbum.dnl_tracks + "," + $(this).find(".btnAction input:hidden[name=_isDown]:not(:disabled)").val();
+						}
+					}
+				});
+			},
+			addLikes : function ()
+			{
+				likes.adds(openalbum.tracks, "TRACK", function() {
+					$(".track .list").find("li").each(function() {
+						if ($(this).find(".check .checkbox > INPUT").attr("checked")) { 
+							$(this).find(".btnAction > a:last").attr("onClick", "javascript:likes.delLike('"+$(this).find(".check .checkbox > INPUT").val()+"','TRACK', $(this));").find("img").attr("src", $(this).find(".btnAction > a:last > img").attr("src").replace("bc_likeOff.gif", "bc_likeCancelOff.gif"));;
+						}
+					});
+				}, function() {});
+			},
+			read : function (playlist_id, msrl)
+			{
+				var read = false;
+				var openalbumsStr = bugs.cookie.get('openalbums');
+				if (openalbumsStr == null || openalbumsStr == "") {
+					read = true;
+				} else {
+					if (openalbumsStr.indexOf(","+playlist_id+",") < 0)	read = true;
+				}
+				
+				if (read && playlist_id != "" && msrl != "") {
+					$.getJSON(g_urlPlaylists+"/read/"+playlist_id+"/"+msrl, {}, function(data) {
+						if (data.result) {
+							var oDate = new Date();
+							oDate.setDate(oDate.getDate() + 1440);	
+							if (openalbumsStr == null || openalbumsStr == "")	bugs.cookie.set("openalbums", ","+playlist_id+",", oDate, "/");
+							else	bugs.cookie.set("openalbums", openalbumsStr+playlist_id+",", oDate, "/");
+							$(".albumDetail .albumInfo .introBox > dd:last").text(parseInt($(".albumDetail .albumInfo .introBox > dd:last").text())+1);
+						}
+					});
+				}
+			},
+			topRankToggle : function ()
+			{
+				if ($("#rank1").css("display") == 'block') {
+					$("a.moreLank").text("1-5위 보기");
+					$("#rank1").hide('blind', 'normal', {}, function() { $("#rank6").show(); });
+				} else {
+					$("a.moreLank").text("6-10위 보기");
+					$("#rank6").hide('blind', 'normal', {}, function() { $("#rank1").show(); });
+				}
+			},
+			getOrder : function (sort, obj)
+			{
+				openalbum.getNewOrder(sort);
+				obj.parent().parent(".tabSorting").find("li").each(function() { $(this).removeClass("on"); });
+				obj.parent("li").addClass("on");
+			},
+			getNewOrder : function (sort)
+			{
+				openalbum.sort = sort;
+				$('body').find(".layerPopup").each(function(){ $(this).remove(); });	
+
+		    	$.get(g_urlOpenalbum+"/ajax/list", 
+		      		{"page" : openalbum.page, "sort" : openalbum.sort, "sort_type" : openalbum.sort_type, "keyword_id" : openalbum.keyword_id},  	
+		        	function (html) {
+		      			html = html.replace(/^\s*/,'');
+		      			if (html != "") {
+		      				$("ul.list.openAlbumList").html(openalbum.ealbumHtml+html);
+		      			}
+		      		}
+		    	);
+			},
+			getPage : function ()
+			{
+				if (!openalbum.last) {
+			    	$.get(g_urlOpenalbum+"/ajax/list", 
+			      		{"page" : ++openalbum.page, "sort" : openalbum.sort, "sort_type" : openalbum.sort_type, "keyword_id" : openalbum.keyword_id},  	
+			        	function (html) {
+			      			html = html.replace(/^\s*/,'');
+			      			if (html != "") {
+			      				$("ul.list.openAlbumList").append(html);
+			      			} else {
+			    				openalbum.page--;
+			    				openalbum.last = true;
+			      			}
+			      		}
+			    	);
+				}
+			},
+			setKeywordList : function (obj)
+			{
+				var idx = 1;
+				if(obj.text() == "펼치기") {
+					$(".hotTheme > ol").find("li").each( function() {
+						if (idx++ > 10)	$(this).show('blind', 'slow');
+					});
+					obj.text("접기");
+					obj.parent().removeClass("down");
+					obj.parent().addClass("up");
+				} else {
+					$(".hotTheme > ol").find("li").each( function() {
+						if (idx++ > 10)	$(this).hide('blind', 'slow');
+					});
+					obj.text("펼치기");
+					obj.parent().addClass("down");
+					obj.parent().removeClass("up");
+				}
+			},
+			getAsideFavors : function (type)
+			{
+		    	$.get(g_urlOpenalbum+"/ajax/rank/"+type, {},  	
+		        	function (html) {
+		      			html = html.replace(/^\s*/,'');
+	      				$("div.popAlbumSide.popOpenSide .albumList").html(html);
+	      				if (type == "WEEK")	openalbum.asideFavorWeekHtml = html;
+	      				else	openalbum.asideFavorMonthHtml = html;
+		      		}
+		    	);
+			},
+			showAsideFavors : function (type)
+			{
+				if (type == "WEEK") {
+					$("div.popAlbumSide.popOpenSide .sideSorting li:first").addClass("on");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:first").removeClass("off");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:last").addClass("off");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:last").removeClass("on");
+					$("div.popAlbumSide.popOpenSide .essen > a").attr("href", g_urlOpenalbum+"/best/weekly");
+					$("div.popAlbumSide.popOpenSide .moreAll > a").attr("href", g_urlOpenalbum+"/best/weekly");
+					
+					if (openalbum.asideFavorWeekHtml != "") {
+						$("div.popAlbumSide.popOpenSide .albumList").html(openalbum.asideFavorWeekHtml);
+					} else {
+						openalbum.getAsideFavors(type);
+					}
+				} else {
+					$("div.popAlbumSide.popOpenSide .sideSorting li:first").addClass("off");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:first").removeClass("on");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:last").addClass("on");
+					$("div.popAlbumSide.popOpenSide .sideSorting li:last").removeClass("off");
+					$("div.popAlbumSide.popOpenSide .essen > a").attr("href", g_urlOpenalbum+"/best/monthly");
+					$("div.popAlbumSide.popOpenSide .moreAll > a").attr("href", g_urlOpenalbum+"/best/monthly");
+					
+					if (openalbum.asideFavorMonthHtml != "") {
+						$("div.popAlbumSide.popOpenSide .albumList").html(openalbum.asideFavorMonthHtml);
+					} else {
+						openalbum.getAsideFavors(type);
+					}
+				}
+			},
+			showAsideFavorsAll : function ()
+			{
+				var show = false;
+				var i=0; 
+				$("div.popAlbumSide.popOpenSide .albumList").find("li").each(function() {
+					if(i++ > 4) {
+						if($(this).css("display") == "none" ) {
+							$(this).show('blind');
+							show = true;
+						} else {
+							$(this).hide('blind');
+						}
+					}
+				});
+				
+				if (show) {
+					$("div.popAlbumSide.popOpenSide .moreList > a").addClass("hideList");
+					$("div.popAlbumSide.popOpenSide .moreList > a").text("닫기");
+				} else {
+					$("div.popAlbumSide.popOpenSide .moreList > a").removeClass("hideList");
+					$("div.popAlbumSide.popOpenSide .moreList > a").text("6~10위 더보기");
+				}
+			},
+			getRankPage : function (type)
+			{
+				if (!openalbum.last) {
+			    	$.get(g_urlOpenalbum+"/ajax/rank/"+type+"/"+openalbum.rank_year+openalbum.rank_month+openalbum.rank_week+"/"+(++openalbum.page), {},  	
+			        	function (html) {
+			      			html = html.replace(/^\s*/,'');
+			      			if (html != "") {
+			      				$("ul.chartList.openAlbumList").append(html);
+			      			} else {
+			    				openalbum.page--;
+			    				openalbum.last = true;
+			      			}
+			      		}
+			    	);
+				}
+			},
+			moveRankPage : function (type)
+			{
+				if (!openalbum.last) {
+			    	$.get(g_urlOpenalbum+"/ajax/rank/"+type+"/"+openalbum.rank_year+openalbum.rank_month+openalbum.rank_week+"/"+openalbum.page, {},  	
+			        	function (html) {
+			      			html = html.replace(/^\s*/,'');
+			      			if (html != "") {
+			      				$("#RANK_Y1").removeClass($("RANK_Y1").attr("class"));
+			      				$("#RANK_Y1").addClass("num"+openalbum.rank_year.substr(0, 1));
+			      				$("#RANK_Y1").html(openalbum.rank_year.substr(0, 1));
+			      				$("#RANK_Y2").removeClass($("RANK_Y2").attr("class"));
+			      				$("#RANK_Y2").addClass("num"+openalbum.rank_year.substr(1, 1));
+			      				$("#RANK_Y2").html(openalbum.rank_year.substr(1, 1));
+			      				$("#RANK_Y3").removeClass($("RANK_Y3").attr("class"));
+			      				$("#RANK_Y3").addClass("num"+openalbum.rank_year.substr(2, 1));
+			      				$("#RANK_Y3").html(openalbum.rank_year.substr(2, 1));
+			      				$("#RANK_Y4").removeClass($("RANK_Y4").attr("class"));
+			      				$("#RANK_Y4").addClass("num"+openalbum.rank_year.substr(3, 1));
+			      				$("#RANK_Y4").html(openalbum.rank_year.substr(3, 1));
+
+			      				$("#RANK_M1").removeClass($("RANK_M1").attr("class"));
+			      				$("#RANK_M1").addClass("num"+openalbum.rank_month.substr(0, 1));
+			      				$("#RANK_M1").html(openalbum.rank_month.substr(0, 1));
+			      				$("#RANK_M2").removeClass($("RANK_M2").attr("class"));
+			      				$("#RANK_M2").addClass("num"+openalbum.rank_month.substr(1, 1));
+			      				$("#RANK_M2").html(openalbum.rank_month.substr(1, 1));
+
+			      				if (type == "WEEK") {
+				      				$("#RANK_W").removeClass($("RANK_W").attr("class"));
+				      				$("#RANK_W").addClass("num"+openalbum.rank_week.substr(1, 1));
+				      				$("#RANK_W").html(openalbum.rank_week.substr(1, 1));
+			      				}
+			      				
+			      				$("ul.chartList.openAlbumList").html(html);
+			      			} else {
+			      				var notfoundPop = new bugs.ui.popup($("#notFound"), { onHide : function() { bugs.ui.modalLayer.hide(); } });
+			      				notfoundPop.show();
+			      				
+		        				setTimeout(function(){ notfoundPop.hide('blind'); }, 10000);
+			      			}
+			      		}
+			    	);
+				}
+			},
+			changeYear : function (type, id)
+			{
+				openalbum.rank_year = id;
+				openalbum.page = 1;
+				
+				openalbum.moveRankPage(type);
+      			$("div.layerOpenCal.layerOpenY").hide('blind');
+			},
+			changeMonth : function (type, id)
+			{
+				openalbum.rank_month = id;	
+				openalbum.page = 1;			
+				
+				openalbum.moveRankPage(type);
+				$("div.layerOpenCal.layerOpenM").hide('blind');
+			},
+			changeWeek : function (type, id)
+			{
+				openalbum.rank_week = id;
+				openalbum.page = 1;
+				
+				openalbum.moveRankPage(type);
+				$("div.layerOpenCal.layerOpenW").hide('blind');				
+			},
+		    listens : function ()
+		    {
+		    	if (openalbum.str_tracks == "") {
+					var msg = "들을 곡을 선택해주세요.";
+					
+					bugs.ui.showAlert(msg, {css : "layerAlert layerAdultNotice"});
+					return;
+		    	}
+		    	
+		    	bugs.music.listen(openalbum.str_tracks);
+		    },
+		    downloads : function ()
+		    {
+		    	if (openalbum.dnl_tracks == "") {
+					var msg = "다운받을 곡을 선택해주세요.";
+					
+					bugs.ui.showAlert(msg, {css : "layerAlert layerAdultNotice"});
+					return;
+		    	}
+		    	
+		    	bugs.music.download(openalbum.dnl_tracks);
+		    },
+		    like : function (id, obj)
+		    {
+		    	likes.add( id, 
+		    				'ESALBUM', {
+		    				anchor:$(obj)
+		    			}, 
+		    			function() { 
+				    		
+				    		//$('div.userArea > div.btnArea > span.btnLike > a:first').one("click", function (){ esalbumlike.unlike(id, this);},true);
+		    				$(obj).addClass("selected");
+							likes.memCount(id, 'ESALBUM', 
+									function(result) {
+									$(obj).find("em").html(bugs.utils.addCommas(result));
+							});
+				    		
+		    	}
+		    	
+		    		
+		    	
+		    	, function() {});
+		    },
+		    unlike : function (id, obj)
+		    {
+		    	likes.deletes( id, 'ESALBUM', {anchor:$(obj)} ,function() { 
+		    		 
+		    		//likes.hideAddAlert();
+		    		$(obj).removeClass("selected");
+		    		likes.memCount(id, 'ESALBUM', 
+							function(result) {
+							$(obj).parent().parent().find("em").html(bugs.utils.addCommas(result));
+					});
+		    	}
+		    	, function() {});
+		    }
+		};
+	}

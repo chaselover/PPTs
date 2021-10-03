@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/moon.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section id="transitions">
+                <a href="?transition=none#/transitions">None</a> -
+                <a href="?transition=fade#/transitions">Fade</a> -
+                <a href="?transition=slide#/transitions">Slide</a> -
+                <a href="?transition=convex#/transitions">Convex</a> -
+                <a href="?transition=concave#/transitions">Concave</a> -
+                <a href="?transition=zoom#/transitions">Zoom</a>
+                </h5>
+            </section>
+            <section data-auto-animate>
+                <h3>배열 최소 합</h3>
+            </section>
+            <section data-auto-animate>
+                <h3>배열 최소 합</h3>
+                <ol>
+                    <li>한 줄에서 하나씩 N개의 숫자를 고른다</li>
+                </ol>
+            </section>
+            <section data-auto-animate>
+                <h3>배열 최소 합</h3>
+                <ol>
+                    <li>한 줄에서 하나씩 N개의 숫자를 고른다</li>
+                    <li>세로로 같은 줄에서 두 개 이상 고를 수 없다.</li>
+                </ol>
+            </section>
+            <section data-auto-animate>
+                <h3>배열 최소 합</h3>
+                <ol>
+                    <li>한 줄에서 하나씩 N개의 숫자를 고른다</li>
+                    <li>세로로 같은 줄에서 두 개 이상 고를 수 없다.</li>
+                    <li>고른 숫자의 합이 최소가 되도록 하려고 한다.</li>
+                </ol>
+            </section>
+            <section>
+                <h4>한 줄에서 하나씩 N개의 숫자를 고른다</h4>
+                <img src="./img/DFS.PNG" alt="">
+            </section>
+            <section data-auto-animate>
+                <h4>세로로 같은 줄에서 두 개 이상 고를 수 없다.</h4>
+                <img src="./img/세로조건.PNG" alt="" style="width: 500px;"><br>
+            </section>
+            <section data-auto-animate>
+                <h4>세로로 같은 줄에서 두 개 이상 고를 수 없다.</h4>
+                <img src="./img/세로조건.PNG" alt="" style="width: 500px;"><br>
+                <img src="./img/세로조건2.PNG" alt="" style="width: 500px;">
+            </section>
+
+            <section>
+                <h4>고른 숫자의 합이 최소가 되도록 하려고 한다.</h4>
+                <img src="./img/백트래킹.PNG" alt="" style="width: 500px;">
+            </section>
+            <section>
+                <h4>전체 코드</h4>
+                <img src="./img/전체코드.PNG" alt="" style="width: 500px;">
+            </section>
+            <section data-auto-animate>
+                <h4>발전방향</h4>
+            </section>
+            <section data-auto-animate>
+                <h4>발전방향</h4>
+                <h5>col_check를 bitmask로 체크하는 건 어떨까?</h>
+            </section>
+            <section data-auto-animate>
+                <h5>col_check를 bitmask로 체크하는 건 어떨까?</h>
+
+                    <img src="./img/종료조건.PNG" alt="" style="width: 800px;">
+            </section>
+
+        </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+        // More info about initialization & config:
+        // - https://revealjs.com/initialization/
+        // - https://revealjs.com/config/
+        Reveal.initialize({
+            hash: true,
+
+            // Learn about plugins: https://revealjs.com/plugins/
+            plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+        });
+    </script>
+</body>
+
+</html>

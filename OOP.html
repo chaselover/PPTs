@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/simple.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+            <section id="transitions">
+                <a href="?transition=none#/transitions">None</a> -
+                <a href="?transition=fade#/transitions">Fade</a> -
+                <a href="?transition=slide#/transitions">Slide</a> -
+                <a href="?transition=convex#/transitions">Convex</a> -
+                <a href="?transition=concave#/transitions">Concave</a> -
+                <a href="?transition=zoom#/transitions">Zoom</a>
+                </h5>
+            </section>
+            <section data-auto-animate>
+                <h2>Object Oriented <br>Progrmming</h2>
+            </section>
+            <section data-auto-animate>
+                <ol>
+                    <li>유래</li>
+                    <li>장점</li>
+                    <li>단점</li>
+                    <li>예시</li>
+                </ol>
+            </section>
+            <section data-auto-animate style="display: flex;align-content: center;justify-content: center;">
+                <img src="/img/커지는.jpg" alt="map" style="width: 60%;">
+            </section>
+            <section data-auto-animate style="display: flex;align-content: center;justify-content: center;">
+                <img src="/img/비용.jpg" alt="map" style="width: 60%;">
+            </section>
+            <section data-auto-animate
+                style="display: flex;align-content: center;justify-content: center; margin-bottom: 0;">
+                <img src="/img/비용.jpg" alt="map" style="width: 60%;">
+                <h3 style="margin-top: 0;">유지보수비용</h3>
+            </section>
+            <section data-auto-animate style="display: flex;align-content: center;justify-content: center;">
+                <img src="/img/고민하는 사진.png" alt="map" style="width: 40%;">
+            </section>
+            <section data-auto-animate style="display: flex;align-content: center;justify-content: center;">
+                <img src="/img/예시2.png" alt="map" style="width: 60%;">
+            </section>
+            <section data-auto-animate style="display: flex;align-content: center;justify-content: center;">
+                <img src="/img/재사용.png" alt="map" style="width: 60%;">
+            </section>
+            </section>
+            <section>
+                <section>
+                    <h2>장점</h2>
+                </section>
+                <section data-auto-animate>
+                    <ol>
+                        <li>재사용성</li>
+                        <li>유지보수가 쉬움</li>
+                        <li>대형 프로젝트에 적합</li>
+                    </ol>
+                </section>
+
+            </section>
+            <section>
+                <section>
+                    <h2>단점</h2>
+                </section>
+                <section data-auto-animate>
+                    <ol>
+                        <li>처리속도가 상대적으로 느림</li>
+                        <li>객체가 많으면 용량이 커질 수 있음</li>
+                        <li>설계시 많은 시간과 노력 필요</li>
+                        <li>과도하면 현실의 모습과는 동떨어진 모습이 됨.</li>
+                    </ol>
+                </section>
+            </section>
+            <section>
+                <section>
+                    <h2>객체지향 3대 특징</h2>
+                </section>
+                <section data-auto-animate>
+                    <ol>
+                        <li>캡슐화</li>
+                        <li>상속</li>
+                        <li>다형성</li>
+                    </ol>
+                </section>
+                <section data-auto-animate>
+                    <h2>캡슐화</h2>
+                    <ol>
+                        <li>객체의 필드(속성), 메소드를 하나로 묶고, 실제 구현 내용을 외부에 감추는 것</li>
+                        <li>정보의 손상과 오용 사전 방지.</li>
+                        <li>다른 객체와의 독립성 유지로 전체적인 코드 유지보수 및 변경에 유연</li>
+                    </ol>
+                </section>
+                <section data-auto-animate>
+                    <h2>상속</h2>
+                    <ol>
+                        <li>상속이란 기존 클래스를 재사용하는 것</li>
+                        <li>시간 절약, 중복 코드 감소 및 유지보수에 용이</li>
+                    </ol>
+                </section>
+                <section data-auto-animate>
+                    <h2>다형성</h2>
+                    <ol>
+                        <li>하나의 타입에 여러 객체를 대입함으로써<br> 다양한 기능을 이용할 수 있도록 하는 것</li>
+                        <li>구체적으로는, 부모 클래스 또는 인터페이스의<br> 타입 변환, 오버로딩과 오버라이딩</li>
+                    </ol>
+                </section>
+                <section data-auto-animate>
+                    <h2>응집도?</h2>
+                    <h2>결합도?</h2>
+                </section>
+            </section>
+        </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+        // More info about initialization & config:
+        // - https://revealjs.com/initialization/
+        // - https://revealjs.com/config/
+        Reveal.initialize({
+            hash: true,
+
+            // Learn about plugins: https://revealjs.com/plugins/
+            plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,678 @@
+	if ("undefined" == typeof playlists)
+	{
+		playlists = {
+			menu : "",
+			temp_tracks : "",
+			is_new_album : false,
+			makePopup : "",
+			newAlbumLayer : null,
+			updateAlbumLayer : null,
+			layerAlert : null,
+			updateLayer : null,
+			isVisible : false,
+			isPlayer : (window.location.href.indexOf("/newPlayer") > -1 || window.location.href.indexOf("/newRadio") > -1) ? true : false,
+			lastCaller : null,
+			showLayerAlert : function(msg){
+				if(this.isPlayer){
+					if(playlists.layerAlert == null){
+						playlists.layerAlert = new bugs.ui.alert("", {css : "layerAdultNotice", modal:false}); 
+					}
+					
+					playlists.layerAlert.show(msg.replace(/\n/g,"<br/>")).layer.css("z-index",1002);
+				}else{
+					alert(msg);
+				}
+				
+			},
+		    add : function (playlist_id, track_ids, callbackTrue, callbackFalse)
+		    {
+				//track_ids 
+		    	var splitIDs = track_ids.split(",");
+		    	if (splitIDs.length > 1000) {
+					playlists.showLayerAlert("최대 1000곡까지 내 앨범에 담을 수 있습니다.\n선택한 곡 수 확인 후 다시 시도해 주세요.");
+//					playlists.playlistLayerHide();
+					return;
+		    	}
+				try{
+					$.ajax({
+                            url : g_urlMe+"/library/myalbum/"+playlist_id+"/append/tracks",
+                            type : "post",
+                            data : {"ids": playlists.uniqueArr(track_ids.split(",")).join(",")},
+                            success : function(data) {
+                                if (data.result) {
+                                    if(typeof(callbackTrue) == "string"){
+                                        eval(callbackTrue);
+
+                                    }else if(typeof(callbackTrue) == "function"){
+                                        try{
+                                            callbackTrue(data.rowcount);
+                                        }catch(e){
+                                        }
+                                    }
+                                }else {
+                                    if(data.error_type == "NOT_LOGGED"){
+                                        bugs.ui.showLoginLayer();
+                                    }else if(data.error_type == "DB_ERROR"){
+                                        playlists.showLayerAlert("내 앨범에 담지 못했습니다.\n잠시 후 다시 담아 주세요.");
+                                    }
+
+                                    if(typeof(callbackFalse) == "string"){
+                                        eval(callbackFalse);
+                                    }
+                                    else if(typeof(callbackFalse) == "function"){
+                                        callbackFalse(data);
+                                    }
+                                }
+                            }
+					});
+				} catch (e) {
+					if(typeof(callbackFalse) == "string") eval(callbackFalse);
+					else if(typeof(callbackFalse) == "function") callbackFalse(0);
+				}
+		    },
+		    updatePlaylistTrack : function (playlist_id, playlist_track_ids, version, page, size, callbackTrue, callbackFalse)
+		    {
+				try{
+					$.ajax({
+                        url : g_urlMe+"/library/myalbum/"+playlist_id+"/track/update",
+                        type : "post",
+                        data :{"ids": playlist_track_ids, "page" : page || 1, "size" : size || 0, "version" : version},
+                        success : function(data) {
+                            if (data.result) {
+                                callbackTrue(data);
+                            }else{
+                                if(data.error_type == "NOT_LOGGED")	{
+                                    bugs.ui.showLoginLayer();
+                                }else if(data.error_type == "INVALID_DATA"){
+                                    alert("다른 기기에서 편집한 목록으로 내 앨범이 업데이트되어 지금 변경한 내용을 저장할 수 없습니다.",function () {
+                                        location.reload();
+                                    });
+                                }else{
+                                    callbackFalse(data);
+                                }
+                            }
+					    }
+					});
+				} catch (e) {
+					callbackFalse();
+				}
+		    },
+		    deletes_playlistTrackId : function (playlist_id, playlist_track_ids, callbackTrue, callbackFalse)
+		    {
+				try{
+				$.ajax({
+                    url : g_urlMe+"/library/myalbum/"+playlist_id+"/delete/tracks",
+                    type : "post",
+                    data : {"ids": playlist_track_ids},
+                    success : function(data) {
+                        if (data.result) {
+                            if (typeof(callbackTrue) == "string") eval(callbackTrue);
+                            else if (typeof(callbackTrue) == "function") callbackTrue(data);
+                        }
+                        else {
+                            if (data.error_type == "NOT_LOGGED") {
+                                bugs.ui.showLoginLayer();
+                            } else {
+                                if (typeof(callbackFalse) == "string") eval(callbackFalse);
+                                else if (typeof(callbackFalse) == "function") callbackFalse(data);
+                            }
+                        }
+                    }
+				});
+				} catch (e) {
+					if(typeof(callbackFalse) == "string") eval(callbackFalse);
+					else if(typeof(callbackFalse) == "function") callbackFalse();
+				}
+		    },
+		    deletePlaylist : function (idArr, callbackTrue, callbackFalse)
+		    {
+		    	var url = g_urlMe+"/library/myalbum/delete/albums";
+				try{
+					$.getJSON(url, {ids:idArr.join(",")}, function(data) {
+						if (data.result) {
+							if(typeof(callbackTrue) == "string") eval(callbackTrue);
+							else if(typeof(callbackTrue) == "function") callbackTrue(data);
+							
+							playlists.resetPlaylist();
+						}
+						else {
+							if(data.error_type == "NOT_LOGGED"){
+								bugs.ui.showLoginLayer();
+								return;
+							}
+							
+							if(typeof(callbackFalse) == "string") eval(callbackFalse);
+							else if(typeof(callbackFalse) == "function") callbackFalse(data);
+						}
+					});
+				} catch (e) {
+					if(typeof(callbackFalse) == "string") eval(callbackFalse);
+					else if(typeof(callbackFalse) == "function") callbackFalse();
+				}
+		    },
+		    deletePlaylists : function (msrls, playlist_ids, callbackTrue, callbackFalse)
+		    {
+				try{
+					$.getJSON(g_urlPlaylists+"/delete/playlists", { msrls : msrls, playlist_ids : playlist_ids }, function(data) {
+						if (data)	callbackTrue();
+						else	callbackFalse();
+					});
+					} catch (e) {
+						callbackFalse();
+					}
+		    },
+		    getHost : function (){
+		    	if (location.href.indexOf(g_urlMusic) != -1)
+		    		return g_urlMusic;
+		    	else if (location.href.indexOf(g_urlSearch) != -1)
+		    		return g_urlSearch;
+		    	else //if (location.href.indexOf(g_urlWww ) != -1)
+		    		return g_urlMusic; // g_urlWww ;
+		    },
+
+			resetPlaylist : function (callBack)
+		    {
+		    	
+				var url = g_urlMe+"/library/myalbum/list";
+				$.get(url, {decorator:"blank", isLayerYN : "Y"},  	
+		        	function (html) {
+		    			$("#track2playlist").children().remove().end().append(html);
+		    			if(typeof callBack == "function"){
+		    				callBack();
+		    			}
+		      		}
+		    	);
+		    },
+		    
+		    
+		    updatePlaylist : function (idArr, version, page, size)
+		    {
+		        var idArrStr = idArr.join(",");
+				var url = g_urlMe+"/library/myalbum/update";
+		    	idArr.reverse();//기존에 노출할때 내림차순이어서..reverse처리
+				$.ajax({
+					type: 'POST',
+					url : url,
+					data: {ids : idArrStr, page : page, version : version, size : size || ""},
+					success : function(data) {
+						if(data.result){
+							alert("저장되었습니다.",function () {
+                                location.reload();
+                            });
+							// bugs.music.myAlbumList.resetGnbMyAlbumList();
+						}else{
+							if(data.error_type == "NOT_LOGGED") {
+                                bugs.ui.showLoginLayer();
+                            }else if(data.error_type == "INVALID_DATA"){
+                                    alert("다른 기기에서 편집한 목록으로 내 앨범이 업데이트되어 지금 변경한 내용을 저장할 수 없습니다.",function () {
+                                        location.reload();
+                                    });
+							}else{
+                                alert("저장하지 못했습니다.\n다시 시도해주세요.");
+							}
+						}
+					}.bind(this),
+					error : function(error) {
+						alert("저장하지 못했습니다.\n다시 시도해주세요.");
+					},
+					dataType : "JSON",
+					cache : false
+				});
+		    },
+		    make2 : function(type){
+		    	playlists.make(null,type);
+		    },
+		    make : function (successCallback, fromType)
+		    {	
+		    	if(!g_isLogged){
+		    		bugs.ui.showLoginLayer();
+		    		return;
+		    	}
+		    	
+		    	var editLayer = $("#createMyAlbumLayer");
+		    	if(document.location.href.indexOf("/newPlayer") > -1 || document.location.href.indexOf("/newRadio") > -1 ){
+		    		editLayer.addClass("player");
+		    	}else{
+                    editLayer.removeClass("player");
+                }
+    			var titleObj = $("#createMyAlbumLayerTitle");
+    			var titleRemainObj = $("#createMyAlbumLayerTitleRemain");
+                $("#createMyAlbumLayerHeader").text("내 앨범 만들기");
+                $("#createMyAlbumLayerLegend").text("내 앨범 만들기");
+    			if(playlists.newAlbumLayer != null){
+		    		titleObj.val("");
+		    	}else{
+		    		playlists.newAlbumLayer = editLayer;
+		    	}
+    			var nowdate = new Date();
+    			var dTitle = document.title;
+    			var pageUrl = document.location.href;
+    			var caller = $(playlists.lastCaller);
+    			if(playlists.lastCaller != null && typeof caller.attr("track_title") != "undefined" && caller.attr("track_title") != ""){
+    				dTitle = $.trim(caller.attr("track_title").replace(/(\\\/)/g,"/").replace(/\\\'/g,"'").replace(/\\\"/g,'"').replace(/(\\\\)/g,"\\").replace(/(\n|\t)/g,"").replace(/( - 벅스)/,""));
+    			}else if(playlists.lastCaller != null && typeof caller.attr("album_title") != "undefined" && caller.attr("album_title") != ""){
+    				dTitle = $.trim(caller.attr("album_title").replace(/(\\\/)/g,"/").replace(/\\\'/g,"'").replace(/\\\"/g,'"').replace(/(\\\\)/g,"\\").replace(/(\n|\t)/g,"").replace(/( - 벅스)/,""));
+    				 
+    			}else if(pageUrl.indexOf("user/library/myalbum/") > -1 || (typeof fromType != "undefined" && fromType == "GNB") ){
+    				dTitle = "내 앨범";
+    			}else if((typeof fromType != "undefined" && fromType == "PLAYER")){
+    				dTitle = "재생목록";
+    			}else{
+    				dTitle = $.trim(dTitle.replace(/(\\\/)/g,"/").replace(/\\\'/g,"'").replace(/\\\"/g,'"').replace(/(\\\\)/g,"\\").replace(/(\n|\t)/g,"").replace(/( - 벅스)/,""));
+    			}
+		        titleObj.val(dTitle+"("+nowdate.getFullYear() + "." + (nowdate.getMonth()+1) + "." + nowdate.getDate()+")");
+		    	
+    			
+		    	titleObj.unbind("keyup");
+    			titleObj.bind("keyup",function(){
+    				playlists.checkTitleLength(titleObj,titleRemainObj);
+    			});
+    			
+    			playlists.checkTitleLength(titleObj,titleRemainObj);
+		    	
+		    	if(!playlists.makePopup){
+		    		playlists.makePopup =  new bugs.ui.popup(playlists.newAlbumLayer, {
+		    			caller : playlists.lastCaller,
+		    			onOk : function() {
+				    		playlists.makeNewPlaylist(successCallback);
+				    		return false;
+			    		},
+			    		onCancel : function() {
+			    			playlists.lastCaller = null;
+			    			playlists.isVisible = false;
+			    			return true;
+			    		},
+			    		onClose : function() {
+			    			playlists.lastCaller = null;
+			    			playlists.isVisible = false;
+			    			return true;
+			    		}
+		    		});
+		    	}
+		    	playlists.isVisible = true;
+		    	playlists.makePopup.show().layer.css("z-index",1001);
+		    	bugs.layerFocusNavi.add(playlists.makePopup.layer, playlists.lastCaller, function(){playlists.makePopup.hide()});
+		 
+		    },
+		    makeNewPlaylist : function (successCallback)
+		    {
+		        var titleObj = $("#createMyAlbumLayerTitle");
+		    	if (titleObj.val().length > 100){
+		    		playlists.showLayerAlert("제목이 100자를 초과했습니다.");
+		    		return;
+		    	}
+		    		
+		    	if (bugs.utils.trim(titleObj.val()) == "" || bugs.utils.stripTag(bugs.utils.trim(titleObj.val())) == "") {
+		    		playlists.showLayerAlert("제목을 입력해주세요.");
+					return;
+		    	}
+		    	
+		    	var title = titleObj.val();
+		    	if($.trim(title)){
+		    		title= title.replace(/(<|>);/g, function (strMatch, p1){	return (p1 == "<")? "&lt;" : "&gt;"; });
+		    	}
+
+		    	$.post(g_urlMe+"/library/myalbum/create", 
+		    		{"title" : title}, function(data) {
+		    	    // console.log(data);
+		    		if (data == null) {
+                        alert("잠시 후 다시 시도해 주세요.");
+                        return;
+                    }else if(data.result == null || data.result.playlist_id <= 0){
+		    		    alert(data.ret_msg);
+                    }else{
+		    			if(playlists.temp_tracks){
+		    				playlists.addPlaylist(data.result.playlist_id ,
+		    										playlists.temp_tracks, 
+		    										function(){
+									    					playlists.resetPlaylist(function(){
+									    					playlists.makePopup.hide();
+											    			playlists.isVisible = false;
+											    			//앨범이 새로 만들어 졌거나 곡 추가가 되면 GNB 내 앨범 새로고침
+											    			if(!playlists.isPlayer){
+											    				bugs.music.myAlbumList.resetGnbMyAlbumList();
+											    			}
+									    				});
+									    			});
+		    			}else{
+		    				playlists.resetPlaylist();
+			    			playlists.makePopup.hide();
+			    			playlists.isVisible = false;
+			    			if(typeof successCallback == "function"){
+			    				try{successCallback();}catch(e){};
+			    			}
+			    			//앨범이 새로 만들어 졌거나 곡 추가가 되면 GNB 내 앨범 새로고침
+			    			if(!playlists.isPlayer){
+			    				bugs.music.myAlbumList.resetGnbMyAlbumList();
+			    			}
+		    			}
+					}
+				},
+				"json"
+				);
+		    	
+		    },
+		    update : function (playlist_id) {
+		    	if(!g_isLogged){
+		    		bugs.ui.showLoginLayer();
+		    		return;
+		    	}
+		    	$.post(g_urlMe+"/library/myalbum/info/"+playlist_id, {}, function(data) {
+		    		if (data) {
+		    			var editLayer = $("#createMyAlbumLayer");
+		    			if(document.location.href.indexOf("/newPlayer") > -1 || document.location.href.indexOf("/newPlayer") > -1 ){
+				    		editLayer.addClass("player");
+				    	}else{
+                            editLayer.removeClass("player");
+                        }
+		    			var titleObj = $("#createMyAlbumLayerTitle");
+		    			var titleRemainObj = $("#createMyAlbumLayerTitleRemain");
+		    			$("#createMyAlbumLayerHeader").text("내 앨범 제목 수정");
+		    			$("#createMyAlbumLayerLegend").text("내 앨범 제목 수정");
+
+		    			titleObj.val(data.title);
+
+		    			titleObj.unbind("keyup");
+		    			titleObj.bind("keyup",function(){
+		    				playlists.checkTitleLength(titleObj,titleRemainObj);
+		    			});
+		    			playlists.checkTitleLength(titleObj,titleRemainObj);
+
+				    	if(!this.updateLayer){
+				    		this.updateLayer = new bugs.ui.popup(editLayer, {
+					    		onOk : function() {
+						    		playlists.updatePlaylistInfo(playlist_id);
+						    		playlists.isVisible = false;
+						    		return false;
+					    		},
+					    		onCancel : function() {
+					    			playlists.isVisible = false;
+					    			return true;
+					    		},
+					    		onClose : function() {
+					    			playlists.isVisible = false;
+					    			return true;
+					    		}
+					    	});
+				    	}else{
+				    		this.updateLayer.option.onOk = function(){
+				    			playlists.updatePlaylistInfo(playlist_id);
+					    		playlists.isVisible = false;
+					    		return false;
+				    		};
+				    	}
+				    	this.updateLayer.show();
+				    	playlists.isVisible = true;
+		    		}else{
+                        alert("정보가 없습니다. 더 이상 제공되지 않거나, 존재하지 않는 정보입니다.", function () {
+                            if(g_isLogged){
+                                location.href = g_urlMusic + "/user/library/myalbum/list";
+                            }else{
+                                location.href = g_urlMusic;
+                            }
+                        });
+                    }
+		    	}.bind(this), "json");
+		    	
+		    },
+		    updatePlaylistInfo : function (playlist_id)
+		    {
+		        var titleObj = $("#createMyAlbumLayerTitle");
+		    	if (titleObj.val().length > 100){
+		    		playlists.showLayerAlert("제목이 100자를 초과했습니다.");
+		    		return;
+		    	}
+		    		
+		    	if (bugs.utils.trim(titleObj.val()) == "" || bugs.utils.stripTag(bugs.utils.trim(titleObj.val())) == "") {
+		    		playlists.showLayerAlert("제목을 입력해주세요.");
+					return;
+		    	}
+		    	
+		    	var title = titleObj.val();
+		    	if($.trim(title)){
+		    		title= title.replace(/(<|>);/g, function (strMatch, p1){	return (p1 == "<")? "&lt;" : "&gt;"; });
+		    	}
+		    	
+		    	$.post(g_urlMe+"/library/myalbum/"+playlist_id+"/update", 
+		    		{ "title" : title}, function(data) {
+					if (data.result) {
+						this.updateLayer.hide();
+						if(typeof updateSuccesCallback == "function"){
+							updateSuccessCallBack();
+						}
+						location.reload();
+					} else {
+						playlists.showLayerAlert("잠시 후 다시 시도해 주세요.");
+					}
+				}.bind(this),
+				"json"
+				);
+		    },
+		    hideLayer : function () {
+		    	bugs.layerFocusNavi.remove($("#track2playlist"));
+		    	$("#track2playlist").hide();
+		    	playlists.isVisile = false;
+		    },
+		    
+		    playlistLayerHide : function(){
+		    	if($("#track2playlist").is(":visible")){
+		    		$("#track2playlist").hide();
+		    		bugs.layerFocusNavi.remove($("#track2playlist"));
+		    		playlists.lastCaller = null;
+		    		$(document).unbind("click",playlists.hideWhenDocumentClick);
+		    	}
+		    },
+		    
+		    hideWhenDocumentClick :  function(e) {
+				if((e.data.button.index(e.target) < 0 && e.data.button.children().index(e.target) < 0
+					&& e.data.layer.index(e.target) < 0 && e.data.layer.children().index(e.target) < 0) 
+					//앨범 리스트에서 띄울 경우에 대한 예외처리
+					) {
+					e.data.layer.hide();
+					bugs.layerFocusNavi.remove($("#track2playlist"));
+					$(document).unbind("click", playlists.hideWhenDocumentClick);
+				}
+			},
+		    
+			showPlaylistLayer : function (obj, tracks, type)
+		    {
+          if($("#track2playlist").find("li[name=playlistLi]").length == 0 && $("#track2playlist").find("div.jspContainer").height() <= 34){
+              playlists.resetPlaylist();
+          }
+		    	var layerMyAlbumListObj =$("#track2playlist");
+		    	if(typeof playlists.lastCaller != "undefined" && playlists.lastCaller != null){
+		    		if($(obj).is($(playlists.lastCaller))){
+		    			if(layerMyAlbumListObj.is(":visible")){
+				    		$(document).unbind("click", playlists.hideWhenDocumentClick);
+				    		bugs.layerFocusNavi.remove(layerMyAlbumListObj.hide());
+				    		return;
+				    	}
+		    		}
+		    	}
+		    	// 앨범리스트 더보기 레이어에서 내앨범 담기시 각 리스트의 더보기 레이어를 여기서 제거하고 이벤트 중지
+	    		bugs.layermenu.removeOldLayer(); 
+		    	playlists.lastCaller = obj;
+		    	if(playlists.isPlayer)
+		    		$("#makePlaylist").addClass("player");
+		    
+		    	var e = obj.offset();
+		    	var bwsize = 0;
+		    	var bhsize = 0;
+		    	if ($(window).height()- (e.top-$(window).scrollTop()) < layerMyAlbumListObj.height())
+		    		bhsize = layerMyAlbumListObj.height() - ($(window).height()- (e.top-$(window).scrollTop()))+28;
+		    	
+		    	var imgHeight = obj.find("img").height();
+		    	
+		    	if (imgHeight == null){
+		    		imgHeight = 12;
+		    	}else{
+		    		imgHeight += navigator.appName.match(/Explorer/i) ? -12 : 4;
+		    	}
+
+		    	var x = e.left;
+				var y = e.top + obj.height() +(imgHeight/2);
+				
+				var pageUrl = document.location.href;
+				if(pageUrl.indexOf("/player?") > -1 || pageUrl.indexOf("/radio") > -1){
+					
+					y -= bhsize + obj.height()-imgHeight;
+					
+					if(navigator.appName.match(/Explorer/i)) y += 12;
+					x -= bwsize;
+					if(obj.attr("id") != "btnMyalbum" && document.location.href.indexOf("/player?") > -1){
+						x = x + obj.width()/2;
+						x = x - layerMyAlbumListObj.width()/2;
+					}
+				}else if(pageUrl.indexOf("/newPlayer") > -1){
+					y  = e.top - layerMyAlbumListObj.height();
+				}else if(pageUrl.indexOf("/mylovemusic") > -1){
+					x = x + obj.width()/2;
+					x = x - layerMyAlbumListObj.width()/2;
+					if ($(window).height()- (e.top-$(window).scrollTop()) < layerMyAlbumListObj.height())
+						y = y - obj.height() - bhsize;
+				}else if(type == "newRadio"){
+					x = x - obj.width() - bwsize -20;
+					y = y - obj.height() - bhsize;
+				}else if(type == "newRadioContenxt") {
+					x = e.left - layerMyAlbumListObj.width() - 25;
+					y  = e.top - layerMyAlbumListObj.height() - 10;
+				} else {
+					x = x + obj.width()/2;
+					x = x - layerMyAlbumListObj.width()/2;
+				}
+				
+				if(typeof tracks == "string") {
+				
+				}else if(typeof tracks == "number"){
+					tracks = tracks+"";
+				} else if(typeof tracks == "object") { // 
+					var trackIdStr = "";
+					
+					for(var i=0;i < tracks.length;i++) {
+						trackIdStr += $(tracks[i]).val();
+						if(i < tracks.length - 1) trackIdStr +=",";
+					}
+					tracks = trackIdStr;
+				}
+				//-------------------------------------//
+				playlists.temp_tracks = tracks;
+				if ($(window).width()- e.left < layerMyAlbumListObj.width()){
+		    		x = e.left - layerMyAlbumListObj.width()+22; // - ($(window).width()- e.left) + 20;
+		    	}
+				layerMyAlbumListObj.css("left", x+"px").css("top", y+"px").css("z-index", "1001").show().attr("tabIndex",-1);
+				layerMyAlbumListObj.unbind("keydown",bugs.layermenu.layerMyAlbumListObj);
+				bugs.layerFocusNavi.add(layerMyAlbumListObj, playlists.lastCaller, function(){layerMyAlbumListObj.hide();});
+				
+				if(layerMyAlbumListObj.is(":visible")){
+					layerMyAlbumListObj.show().focus();
+				}
+				playlists.isVisible = true;
+				$(document).unbind("click",playlists.hideWhenDocumentClick).bind("click", {button : obj, layer : layerMyAlbumListObj}, playlists.hideWhenDocumentClick);
+				try{
+					bugs.scroll.setScrollBar($("#track2playlistScrollArea"),true);
+				}catch(e){
+//					if(playlists.isPlayer){
+//						$("#track2playlistScrollAreaPlayer").jScrollPane();
+//					}
+				}
+		    },
+		    addPlaylist : function (id, tracks, addSuccessCallBack)
+		    {
+		    	if(typeof tracks == "number"){
+		    		tracks = tracks+"";
+		    	}
+		    	if (tracks == "") {
+		    		playlists.showLayerAlert("내 앨범에 담을 곡을 선택해주세요.");
+					return;
+				}
+		    	playlists.add(id, tracks, function(cnt) {
+		    		playlists.temp_tracks = ""; // 
+		    		if (cnt > 0) {
+		    			playlists.showLayerAlert("선택하신 "+cnt+"곡을 앨범에 담았습니다.\n(중복 곡은 제외됩니다.)");
+	    		    	//try { if (playlists.menu == "PLAYLIST" && id == trackPlaylists.playlist_id)	trackPlaylists.sortList("PRIORITY", "ASC", "num"); }catch(e){};
+		    		} else {
+		    			playlists.showLayerAlert("선택하신 곡은 이미 수록되어있습니다.");
+						return;
+		    		}
+		    		
+		    		if(typeof addSuccessCallBack == "function"){
+		    			try{ addSuccessCallBack(); }catch(e){}
+		    		}
+		    		
+		    		if(playlists.lastCaller != null ){
+		    			try{
+		    				new Function($(playlists.lastCaller).attr("addToMyalbumCallbackFuncStr"))();
+		    			}catch(e){}
+		    		}
+		   
+		    		$("#track2playlist").hideLayer();
+	    			playlists.isVisible = false;
+		    		
+    			}, function(ret) {
+    				if (ret.error_type == "EXCEED") {
+    					playlists.showLayerAlert("내 앨범에는 1000곡 까지만 담을 수 있습니다.\n다른 앨범을 선택 하거나 곡 수를 조금만 줄여 주세요.");
+	    			} 
+    				
+	    			$("#track2playlist").hide();
+	    			playlists.isVisible = false;
+	    		});
+		    },
+		    addTrackToPlaylist : function (id)
+		    {
+		    	playlists.addPlaylist(id, playlists.temp_tracks, function(){
+		    		bugs.music.myAlbumList.resetGnbMyAlbumList();
+		    	});
+		    },
+		    checkTitleLength : function (selector,remain)
+		    {
+		    	selector = $(selector);
+		    	var text = selector.val() || "";
+		    	if (text.length >= 100) {
+		    		text = text.substr(0,100);
+		    		selector.val(text);
+		    		remain.text("("+text.length+"/100)");;
+		    	} else {
+		    		remain.text("("+text.length+"/100)");
+		    	}
+		    },
+		    
+		    checkDescribeLength : function (selector, remain)
+		    {
+		    	selector = $(selector);
+		    	var text = selector.val() || "";
+		    	
+		    	if (text.length >= 300) {
+		    		text = text.substr(0,300);
+		    		selector.val(text);
+		    		remain.text("("+text.length+"/300)");;
+		    	} else {
+		    		remain.text("("+text.length+"/300)");
+		    	}
+		    },
+		    
+		    uniqueArr : function(arr){
+				var tempArr = [];
+				var size = arr.length;
+				var tempSize = 0;
+				for(var i=0; i<size; i++){
+					tempSize = tempArr.length;
+					if(tempSize == 0){
+						tempArr.push(arr[i]);
+						continue;
+					}
+					for(var j=0; j<tempSize; j++){
+						
+						if(arr[i] == tempArr[j]){
+							break;
+						}else{
+							if(j == tempSize - 1){
+								tempArr.push(arr[i]);
+								break;
+							}
+						}
+					}
+				}
+				return tempArr;
+		    }
+		};
+	}

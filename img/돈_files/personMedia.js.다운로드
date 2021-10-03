@@ -1,0 +1,814 @@
+//
+function openWindowWithPost(url,name,keys,values, option) {
+	var newWindow;
+	if(typeof  option == "undefined") {
+		newWindow = window.open(url, name);
+	} else {
+		newWindow = window.open(url, name, option);
+	}
+	
+	if (!newWindow) return false;
+	var html = "";
+	html += "<html><head>";
+	html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'; 
+	html += "</head><body><form id='formid' method='post' action='" + url + "'>";
+	if (keys && values && (keys.length == values.length))
+		for (var i=0; i < keys.length; i++)
+			html += "<input type='hidden' name='" + keys[i] + "' value='" + values[i] + "'/>";
+	html += "</form><script type='text/javascript'>document.getElementById(\"formid\").submit()</script></body></html>";
+	
+	newWindow.document.write(html);
+	return newWindow;
+}
+
+function openWindowWithPost1(url,name,keys,values, option) {
+	var html = "<form name='"+name+"' id='formid' method='post' target='"+name+"'>";
+	if (keys && values && (keys.length == values.length))
+		for (var i=0; i < keys.length; i++)
+			html += "<input type='hidden' name='" + keys[i] + "' value='" + values[i] + "'/>";
+	html += "</form>"
+	var frm = $(html).get(0);
+	frm.action = url;
+	frm.target = name;
+	
+	if(typeof option == "undefined") {
+		frm.onsubmit = function() {
+			window.open(url, name);
+		};
+	} else {
+		frm.onsubmit = function() {
+			window.open(url, name, option);
+		};
+	}
+	frm.submit();
+}
+
+function __afterTwitterSetting() {
+}
+
+bugs.personMedia = {
+		layer : null,
+		setting : function() {
+			if(!g_isLogged) {
+				bugs.ui.showLoginLayer();
+				return;
+			}
+	
+			var url = g_urlAjax+"/external/connectionManager";
+			$.get(url, function(result) {
+				if(result != "") {
+					if(bugs.personMedia.layer != null) {
+						bugs.personMedia.layer.remove();
+					}
+					bugs.personMedia.layer = $(result);
+					bugs.personMedia.layer.css(
+							{position : "absolute", left : "50%", top : 186, "margin-left" : -227}
+					);
+					bugs.personMedia.layer.appendTo("body");
+
+					/*
+					__afterTwitterSetting = function() {
+						alert("");
+						__afterTwitterSetting();
+					};
+					*/
+				} else {
+				}
+			});
+		},
+		twitterAuth : function() {
+			bugs.personMedia.close();
+			bugs.twitter.popupAuth();
+		},
+		cancelTwitter : function() {
+			var url = g_urlAjax+"/external/twitter/cancel";
+			$.post(url, function(result) {
+				if(result == "200") {
+
+					$("#twitterAuthY").hide();
+					$("#twitterAuthN").show();
+					bugs.ui.showAlert("연동이 해제 되었습니다.", {css : "layerAdultNotice"});
+				} else {
+					bugs.ui.showAlert("연동 해제가 실패 하였습니다.", {css : "layerAdultNotice"});
+				}
+			});
+		},
+		close : function() {
+			
+			if(bugs.personMedia.layer != null) {
+				bugs.personMedia.layer.hide();
+				bugs.personMedia.layer.remove();
+				
+			}
+		},
+		log : function(cols, nums, scriptYn) {
+			if(g_msrl != false) {
+				if(typeof nums != "undefined") {
+					nums[nums.length] = g_msrl;
+				}
+			}
+			if(typeof scriptYn == "undefined") scriptYn = false;
+			bugs.logging.add(bugs.twitter.logId, cols, nums, scriptYn);
+		}
+	}
+
+
+
+
+// bugs.twitter = {
+// 	logId : 201,
+// 	popupAuth : function(text, isSave) {
+// 		if(typeof isSave == "undefinde") isSave = true;
+//
+// 		var url = g_urlMusic + '/external/twitter/authorize?decorator=blank';
+// 		if(isSave == false) {
+// 			url = url + "&save=false";
+// 		}
+// 		if(!bugs.valid.empty(text)) {
+// 			url = url + "&text=" + encodeURIComponent(text);
+// 			//var win = openWindowWithPost1(url, "_twitter", ["text"], [text], 'width=800,height=400,top=100,left=100,resizable=yes,scrollbars=no');
+// 			//win.focus();
+// 		} else {
+// //			var win = window.open(url,'_twitter','width=800,height=400,top=100,left=100,resizable=yes,scrollbars=no');
+// //			win.focus();
+// 		}
+// 		var win = window.open(url,'_twitter','width=1080,height=400,top=100,left=100,resizable=yes,scrollbars=no');
+// 		win.focus();
+//
+// 	},
+// 	popupStatus : function(text, url) {
+// 		if(typeof text == "undefined") return;
+// 		// () 때문에 IE에서 교차스크립트 방지를 위해서 페이지를 변경했다고 나와서 추가함
+// 		text = text.replace(/\(/g, "<");
+// 		text = text.replace(/\)/g, ">");
+// 		//var url =  "http://twitter.com/?status=" + encodeURIComponent(text);
+// 		var url =  "http://twitter.com/share?text=" + encodeURIComponent(text) + "&url=" + (url || "");
+// 		var win = window.open(url,'_twitterStatus','width=600,height=280,top=100,left=100,resizable=yes,scrollbars=no');
+// 		try { win.focus(); } catch (e) {}
+// 	},
+// 	checkAuth : function(success, fail) {
+// 		var url = g_urlAjax+'/external/twitter/checkAuth';
+// 		$.get(url, function(result) {
+// 			bugs.log.log(result);
+// 			if(typeof result !="undefined" && result == "1") {
+// 				success();
+// 			} else {
+// 				fail();
+// 			}
+// 		});
+// 	},
+// 	textTemplate : '<h2 class="twitter">트위터로 보내기</h2>' +
+// 		'<div class="sendCode">' +
+// 		'	<p><%=text%></p>' +
+// 		'</div>' +
+// 		'<div class="btnArea">' +
+// 		'	<span class="button typeME"><a href="javascript:void(0);">확인</a></span>' +
+// 		'	<span class="button typeM"><a href="javascript:void(0);">취소</a></span>' +
+// 		'</div>',
+// 	connectTemplate : '<p class="textAdminC">'+
+// 		'	트위터 인증정보를 저장하시면<br />보다 쉽게 공유할 수 있습니다.'+
+// 		'</p>'+
+// 		'<div class="btnArea">'+
+// 		'	<span class="button typeME"><a href="javascript:void(0);">확인</a></span>'+
+// 		'	<span class="button typeM"><a href="javascript:void(0);">취소</a></span>'+
+// 		'</div>',
+// 	updateLayer : null,
+// 	updateStatus : function(text, url) {
+//
+// 		// IE 10 이하 트위터 공유 이용 불가 안내
+// 		var ieVersion = bugs.browser.getInternetExplorerVersion();
+// 		if(ieVersion >= 0 && ieVersion <= 10) {
+// 			alert('Internet Explorer 10 이하 브라우저에서 이용할 수 없습니다.');
+// 			return;
+// 		}
+//
+// 		bugs.twitter.popupStatus(text, url);
+// 		return;
+// 		if(!g_isLogged) {
+// 			bugs.twitter.statusPopup(text, function() {
+// 				bugs.twitter.popupAuth(text);
+// 			});
+// 			//bugs.twitter.popupStatus(text);
+// 			return;
+// 		} else {
+// 			bugs.twitter.checkAuth(
+// 				function() { // success
+// 					bugs.twitter.statusPopup(text, function() {
+// 						var updateUrl = g_urlAjax+"/external/twitter/updateStatus";
+// 						$.post(updateUrl, {text : text}, function(result) {
+// 							bugs.twitter.updateLayer.hide();
+// 							bugs.twitter.updateLayer.remove();
+//
+// 							if(200 == result) {
+// //								bugs.ui.showAlert("트위터에 보내기 성공 하였습니다.", {css : "layerAdultNotice"});
+// 								alert("공유되었습니다.");
+// 								return;
+// 							} else {
+// //								bugs.ui.showAlert("트위터에 보내기가 실패 하였습니다.<br/>잠시 후에 다시 시도하여 주세요.", {css : "layerAdultNotice"});
+// 								alert("공유하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+// 								return;
+// 							}
+//
+// 						});
+// 					});
+// 				},
+// 				function() { // fail
+// 					bugs.twitter.connectPopup(text);
+// 				}
+// 			);
+// 		}
+// 	},
+// 	statusPopup : function(text, initOk) {
+// 		var tmp = new bugs.template(bugs.twitter.textTemplate, {text : text});
+// 		bugs.twitter.updateLayer = new bugs.ui.popup(tmp.html(), {
+// 			title : "보내기", css : "layerSendContent"
+// 		});
+// 		bugs.twitter.updateLayer.layer.find(".btnArea span:first a").click(function() {
+// 			initOk();
+// 			bugs.twitter.updateLayer.hide();
+// 			bugs.twitter.updateLayer.remove();
+// 		}).end().find(".btnArea span:last a").click(function() {
+// 			bugs.twitter.updateLayer.hide();
+// 			bugs.twitter.updateLayer.remove();
+// 		});
+//
+// 		bugs.twitter.updateLayer.show();
+// 	},
+// 	popup : null,
+// 	connectPopup : function(text) {
+// 		var connectPopup = new bugs.ui.popup(bugs.twitter.connectTemplate, {
+// 			title : "트위터 연동하기", css : "layerAdminMsg"
+// 		});
+// 		bugs.twitter.popup = connectPopup;
+// 		bugs.twitter.popup.layer.find(".btnArea span:first a").click(function() {
+// 			bugs.twitter.popupAuth(text);
+// 			bugs.twitter.popup.hide();
+// 			bugs.twitter.popup.remove();
+// 		}).end().find(".btnArea span:last a").click(function() {
+// 			bugs.twitter.popupAuth(text, false);
+// 			//bugs.twitter.popupStatus(text);
+// 			bugs.twitter.popup.hide();
+// 			bugs.twitter.popup.remove();
+// 		});
+// 		bugs.twitter.popup.show();
+// 	},
+// 	artist : function(artistId, artistNm) {
+// 		//var url = bugs.url.artistPage(artistId);
+// 		$.get(g_urlAjax + "/shortenurl/getUrl", {"type":"artist", "id":artistId}, function(result) {
+//  			var url = result;
+//
+// 			if(typeof url == "undefined") return;
+// 			var text = artistNm + " #벅스";
+// 			bugs.twitter.updateStatus(text, url);
+// 			bugs.personMedia.log(["twitter", "artist"], [artistId]);
+// 		});
+// 	},
+// 	album : function(albumId, title, artistNm) {
+// 		//var url = bugs.url.albumPage(albumId);
+// 		$.get(g_urlAjax + "/shortenurl/getUrl", {"type":"album", "id":albumId}, function(result) {
+// 			var url = result;
+//
+// 			if(typeof url == "undefined") return;
+// 			var text = title.replace(/\\\'/g, "'") + " - " + artistNm + " #벅스";
+// 			bugs.twitter.updateStatus(text, url);
+// 			bugs.personMedia.log(["twitter", "album"], [albumId]);
+// 		});
+// 	},
+// 	mv : function(mvId, title, artistNm) {
+// 		var url = bugs.url.mvPage(mvId);
+// 		if(typeof url == "undefined") return;
+// 		var text = title.replace(/\\\'/g, "'") + " - " + artistNm + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "mv"], [mvId]);
+// 	},
+//
+// 	esAlbum : function(albumId, title){
+// 		var url = bugs.url.esAlbumPage(albumId);
+// 		if(typeof url == "undefined") return;
+// 		var text = "[뮤직PD앨범] " + title.replace(/\\\'/g, "'") + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "esAlbum"], [albumId]);
+// 	},
+// 	musicPD : function(musicPDId, musicPDName) {
+// 		var url = bugs.url.musicPDPage(musicPDId);
+// 		if(typeof url == "undefined") return;
+// 		var text = "[뮤직PD] " + musicPDName + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "musicPD"], [musicPDId]);
+// 	},
+// 	openAlbum : function(albumId, title){
+// 		var url = bugs.url.openAlbumPage(albumId);
+// 		if(typeof url == "undefined") return;
+// 		var text = "[공개앨범] " + title.replace(/\\\'/g, "'") + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "openAlbum"], [albumId]);
+// 	},
+// 	track : function(trackId, title, artistNm) {
+// 		//var url = bugs.url.trackPage(trackId);
+// 		$.get(g_urlAjax + "/shortenurl/getUrl", {"type":"track", "id":trackId}, function(result) {
+// 			var url = result;
+//
+// 			if(typeof url == "undefined") return;
+// 			var text = title.replace(/\\\'/g, "'") + " - " + artistNm + " #벅스";
+// 			bugs.twitter.updateStatus(text, url);
+// 			bugs.personMedia.log(["twitter", "track"], [trackId]);
+// 		});
+// 	},
+// 	etc : function(url, title, eventId) {
+// //		var url = bugs.url.trackPage(trackId);
+// 		if(typeof url == "undefined") return;
+//
+// 		var text;
+// 		if(eventId == 'kakaomusic') {
+// 			text = title + " -  #카카오뮤직";
+// 		} else {
+// 			text = title + " -  #벅스";
+// 		}
+//
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "etc"], [eventId], true);
+// 	},
+// 	common : function(url, title) {
+// 		if(typeof url == "undefined") return;
+// 		var text = title + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 	},
+// 	common2 : function(url, title) {
+// 		if(typeof url == "undefined") return;
+// 		var text = title ;
+// 		bugs.twitter.updateStatus(text, url);
+// 	},
+// 	chart : function(chart, type, cn, date1, date2) {
+// 		if(chart != "bugs") return;
+// 		var text = "";
+// 		var url = g_urlMusic + "/chart/" + chart + "/" + type + "?cn=" + cn;
+// 		if(type=="newrealtime") {
+// 			text = "벅스 실시간 차트("+date1+")" + " #벅스";
+// 		} else if(type=="realtime") {
+// 			text = "벅스 일간 차트("+date1+") " + " #벅스";
+// 		} else if(type=="top1000") {
+// 			text = "벅스 주간 차트("+date1+"~"+date2+" ) " + " #벅스";
+// 		}
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "chart", type], [cn]);
+// 	},
+// 	musiclounge : function(share_url, title, product_id){
+// 		var url;
+// 		url = share_url;
+//
+// 		var text = "[뮤직라운지] " + title ;
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "musiclounge"], [product_id]);
+// 	},
+// 	musicloungeBaseball : function(share_url, title, product_id){
+// 		var url;
+// 		url = share_url;
+//
+// 		var text = title ;
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "musicloungeBaseball"], [product_id]);
+// 	},
+// 	special : function(unicontent_id, corner, title, share_url){
+// 		var url;
+// 		if(share_url == undefined || share_url == "")
+// 			url = g_urlMusic + "/specialView/" + corner + "/" + unicontent_id;
+// 		else
+// 			url = share_url;
+//
+// 		var text = "[스페셜] " + title + " #벅스";
+// 		bugs.twitter.updateStatus(text, url);
+// 		bugs.personMedia.log(["twitter", "special"], [unicontent_id]);
+// 	},
+// 	cancel : function() {
+// 	}
+// }
+
+// 시작 - 페이스북 공유 초기화
+window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '122936701116206',
+      version    : 'v2.12',
+      xfbml      : true
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.com/ko_KR/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+// 끝
+
+bugs.facebook2 = {
+		popup : function(url) {
+/*			
+			FB.ui(
+					 {
+					  method: 'share_open_graph',
+					  action_type: 'og.likes',
+					  action_properties: JSON.stringify({
+						    object:'https://developers.facebook.com/docs/',
+						  })
+					}, function(response){
+						  // Debug response (optional)
+						  console.log(response);						
+			});			
+*/			
+			
+			if(bugs.browser.getInternetExplorerVersion() == 7) {
+				alert("Internet Explorer 7 브라우저에서는 지원하지 않는 기능입니다.");
+				return;
+			}
+			
+			FB.ui(
+					 {
+					  method: 'share',
+					  href: url
+					}, function(response){
+						if (response && !response.error_code) {
+							// 공유되었을 때 처리				alert("공유되었습니다.");
+						} else {
+							// 공유 취소 또는 오류 발생시 처리		alert("공유가 취소되었습니다."); alert("공유 도중에 오류가 발생하였습니다. 다시 시도해 주세요.")
+						}
+					});			
+		},
+		album : function(albumId, title, artistNm) {
+			if(typeof albumId == "undefined") 
+				return;
+
+			var uu = bugs.url.albumPage(albumId) + "?ap=T";
+			var tt = title + " - " + artistNm;
+			bugs.facebook2.popup(uu);
+			bugs.personMedia.log(["facebook", "album"], [albumId]);
+		},
+		artist : function(artistId, artistNm) {
+			if(typeof artistId == "undefined") 
+				return;
+
+			var uu = bugs.url.artistPage(artistId);
+
+			bugs.facebook2.popup(uu, artistNm);
+			bugs.personMedia.log(["facebook", "artist"], [artistId]);
+		},
+		track : function(trackId, title, artistNm) {
+			if(typeof trackId == "undefined") 
+				return;
+			
+			var uu = bugs.url.trackPage(trackId) + "?ap=T";
+			var tt = title + " - " + artistNm;
+
+			bugs.facebook2.popup(uu);
+			bugs.personMedia.log(["facebook", "track"], [trackId]);
+		},
+		mv : function(mvId, title, artistNm) {
+			if(typeof mvId == "undefined") 
+				return;
+			
+			var uu = bugs.url.mvPage(mvId);
+			var tt = title + " - " + artistNm;
+
+			bugs.facebook2.popup(uu);
+			bugs.personMedia.log(["facebook", "mv"], [mvId]);
+		},
+		esAlbum : function(albumId, title){
+			if(typeof albumId == "undefined") 
+				return;
+
+			var uu = bugs.url.esAlbumPage(albumId) + "?ap=T";;
+			var tt = "[뮤직PD] " + title;
+			bugs.facebook2.popup(uu);
+			bugs.personMedia.log(["facebook", "esAlbum"], [albumId]);
+		},
+		musicPD : function(musicPDId, musicPDName) {
+			if(typeof musicPDId == "undefined") 
+				return;
+
+			var uu = bugs.url.musicPDPage(musicPDId);
+			var tt = musicPDName + "<br/>뮤직PD";
+			
+			bugs.facebook2.popup(uu);
+			bugs.personMedia.log(["facebook", "musicPD"], [musicPDId]);
+		},
+		special : function(unicontent_id, corner, title, share_url) {
+			var url;
+			
+			if(share_url == undefined || share_url == "")
+				url = g_urlMusic + "/specialView/" + corner + "/" + unicontent_id + "?ap=T";
+			else
+				url = share_url;
+			
+			var tt = "[스페셜] " + title;
+			
+			bugs.facebook2.popup(url);
+			bugs.personMedia.log(["facebook", "special"], [unicontent_id]);
+		},
+		musiclounge : function(url, product_id) {
+			bugs.facebook2.popup(url);
+			bugs.personMedia.log(["facebook", "musiclounge"], [product_id]);
+		},
+		etc : function(url, eventID) {
+			bugs.facebook2.popup(url);
+			bugs.personMedia.log(["facebook", "etc"], [eventID]);
+		}		
+};
+
+bugs.facebook = {
+		popup : function(uu, tt) {
+			if(typeof uu == "undefined") return;
+			var url = "http://www.facebook.com/sharer.php";
+			// () 때문에 IE에서 교차스크립트 방지를 위해서 페이지를 변경했다고 나와서 추가함
+			tt = tt.replace(/\(/g, "<");
+			tt = tt.replace(/\)/g, ">");
+			url += "?u=" + escape(uu);
+			if(typeof tt != "undefined")
+				url += "&t=" + encodeURIComponent(tt);
+			var win = window.open(url, 'facebook_share', 'width=772,height=450');
+			if (typeof win == 'object') win.focus();
+		},
+		popup2 : function(uu, tt) {
+			if(typeof uu == "undefined") return;
+			var url = "http://www.facebook.com/sharer.php";
+			// () 때문에 IE에서 교차스크립트 방지를 위해서 페이지를 변경했다고 나와서 추가함
+			tt = tt.replace(/\(/g, "<");
+			tt = tt.replace(/\)/g, ">");
+			url += "?u=" + encodeURIComponent(uu);
+			if(typeof tt != "undefined")
+				url += "&t=" + encodeURIComponent(tt);
+			var win = window.open(url, 'facebook_share', 'width=772,height=450');
+			win.focus();
+		},
+		artist : function(artistId, artistNm) {
+			if(typeof artistId == "undefined") return;
+			var uu = bugs.url.artistPage(artistId);
+			//$.get(g_urlMusic + "/shortenurl/getUrl", {"type":"artist", "id":artistId}, function(result) {
+			//	var uu = result;
+				bugs.facebook.popup(uu, artistNm);
+				bugs.personMedia.log(["facebook", "artist"], [artistId]);
+			//});
+		},
+		album : function(albumId, title, artistNm) {
+			if(typeof albumId == "undefined") return;
+			//var uu = "http://music.bugs.co.kr/external/facebook/album/" + albumId;
+			var uu = bugs.url.albumPage(albumId);
+			//$.get(g_urlMusic + "/shortenurl/getUrl", {"type":"album", "id":albumId}, function(result) {
+				//var uu = result;
+				var tt = title + " - " + artistNm;
+				bugs.facebook.popup(uu, tt);
+				bugs.personMedia.log(["facebook", "album"], [albumId]);
+			//});
+		},
+		esAlbum : function(albumId, title){
+			if(typeof albumId == "undefined") return;
+			var uu = bugs.url.esAlbumPage(albumId);
+			var tt = "[뮤직PD] " + title;
+			bugs.facebook.popup(uu, tt);
+			bugs.personMedia.log(["facebook", "esAlbum"], [albumId]);
+		},
+		musicPD : function(musicPDId, musicPDName) {
+			if(typeof musicPDId == "undefined") return;
+			var uu = bugs.url.musicPDPage(musicPDId);
+			var tt = musicPDName + "<br/>뮤직PD";
+			bugs.facebook.popup(uu, tt);
+			bugs.personMedia.log(["facebook", "musicPD"], [musicPDId]);
+		},
+		openAlbum : function(albumId, title){
+			if(typeof albumId == "undefined") return;
+			var uu = bugs.url.openAlbumPage(albumId);
+			var tt = "[공개앨범] " + title;
+			bugs.facebook.popup(uu, tt);
+			bugs.personMedia.log(["facebook", "openAlbum"], [albumId]);
+		},		
+		track : function(trackId, title, artistNm) {
+			if(typeof trackId == "undefined") return;
+			var uu = bugs.url.trackPage(trackId);
+			//$.get(g_urlMusic + "/shortenurl/getUrl", {"type":"track", "id":trackId}, function(result) {
+				//var uu = result;
+				var tt = title + " - " + artistNm;
+				bugs.facebook.popup(uu, tt);
+				bugs.personMedia.log(["facebook", "track"], [trackId]);
+			//});
+		},
+		chart : function(chart, type, cn, date1, date2) {
+			if(typeof type == "undefined") return;
+			if(typeof cn == "undefined") return;
+			var uu = g_urlMusic + "/chart/" + chart + "/" + type + "?cn=" + cn;
+			var tt = "";
+			if(type=="newrealtime") {
+				tt = "벅스 실시간 차트";
+			} else if(type=="realtime") {
+				tt = "벅스 일간 차트("+date1+")";
+			} else if(type=="top1000") {
+				tt = "벅스 주간 차트("+date1+"~"+date2+" )";
+			}
+
+			bugs.facebook.popup(uu, tt);
+			bugs.personMedia.log(["facebook", "chart", type], [cn]);
+		},
+		special : function(unicontent_id, corner, title) {
+			var url = g_urlMusic + "/specialView/" + corner + "/" + unicontent_id;
+			var tt = "[스페셜] " + title;
+			bugs.facebook.popup(url, tt);
+			bugs.personMedia.log(["facebook", "special"], [unicontent_id]);
+		},
+		common : function(url, title) {
+			bugs.facebook.popup(url, title);
+		},
+		musiclounge : function(url, product_id, mTitle) {
+			bugs.facebook.popup(url,mTitle);
+			bugs.personMedia.log(["facebook", "musiclounge"], [product_id]);
+		},
+		etc : function(url, title, eventID) {
+			bugs.facebook.popup(url, title);
+			bugs.personMedia.log(["facebook", "etc"], [eventID]);
+		}		
+		
+}
+
+bugs.kakao = {
+	appKey : 'a82fbdf7f1b0ff57e67a4bc07fdc365e',
+	init : function(){
+		Kakao.init(this.appKey);
+	},
+	cleanup : function(){
+		Kakao.Story.cleanup();		
+	},
+	story : function(url, postData, sendUrl, msrl){
+		if(sendUrl){
+			var sUrl = sendUrl
+				+ "?url=" + url
+				+ "&title=" + encodeURIComponent(postData.link_info.title)
+				+ "&desc=" + encodeURIComponent( bugs.utils.cutstring1(postData.link_info.description, 100) )
+				+ "&cont=" + encodeURIComponent( bugs.utils.cutstring1(postData.content, 100) )
+				+ "&msrl=" +  encodeURIComponent(msrl) 
+				+ "&host=" + encodeURIComponent(postData.link_info.host);	// 카카오뮤직 카카오스토리 공유 이벤트로 인해 추가
+			
+			sUrl = encodeURIComponent(sUrl);
+
+			if(postData.link_info.host == "www.kakao.com/music" || postData.link_info.host == "music.kakao.com") {
+				var link2 = "kakaomusic://app/browser?link=" + sUrl;
+				 
+				//Create Base64 Object
+				var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
+				var link3 = Base64.encode(link2);
+				 
+				location.href = "kakao88510848277091776://exec?category=kakaomusic&target=" + link3;				
+			} else {
+				com.bugs.app.goFullBrowser(sUrl, true);
+			}
+			return;
+		}
+		
+		try{
+			this.init();	
+		}
+		catch(e){
+			//alert(e.message);
+		}
+		
+		Kakao.Auth.login({
+			success: function(authObj) {
+			      // 로그인 성공시 API를 호출합니다.
+			      Kakao.API.request({
+			        url: '/v1/user/me',
+			        success: function(res) {
+			        	// 로그인 성공시, API를 호출합니다.
+			            Kakao.API.request( {
+			              url : '/v1/api/story/linkinfo',
+			              data : {
+			                url : url
+			              }
+			            }).then(function(res) {
+			              // 이전 API 호출이 성공한 경우 다음 API를 호출합니다.
+			              postData.link_info.image = res.image;
+			              return Kakao.API.request( {
+			                url : '/v1/api/story/post/link',
+			                data : postData
+			              });
+			            }).then(function(res) {
+			              return Kakao.API.request( {
+			                url : '/v1/api/story/mystory',
+			                data : { id : res.id }
+			              });
+			            }).then(function(res) {
+			              //document.getElementById('post-result').innerHTML = JSON.stringify(res);
+			              //alert(JSON.stringify(res));
+			            	
+			            	// 카카오 이벤트 시, 로그 남기기 (공유가 최종적으로 처리된 경우)
+//			            	if(postData.link_info. == "www.kakao.com/music") {
+//			            	if(msrl != "") {
+			            	try{
+			            		void(logShareEventThroughSNS('KAKAOSTORY'));
+			            	}catch(e){}
+//			            	}
+			            		
+			            	
+			            }, function (err) {
+			              //alert(JSON.stringify(err));
+			              alert("카카오스토리 공유 중 오류가 발생했습니다.");
+			            });
+			        }
+			      });
+			    },
+		fail: function(errorObj) {
+//			alert("ERROR");
+//			alert(errorObj.error + "////" + errorObj.description);
+//				Object {error: "unauthorized", error_description: "unauthorized - unregistered website domain"}			
+			}		
+		});
+		
+	},
+	story2 : function(url, text) {
+	
+		if(bugs.browser.getInternetExplorerVersion() == 7) {
+			alert("Internet Explorer 7 브라우저에서는 지원하지 않는 기능입니다.");
+			return;
+		}
+		
+		try {
+			this.init();	
+		}
+		catch(e){	// 이미 카카오 스토리 공유하기 객체가 생성되어 있다면 catch 구문 거쳐서 바로 넘어감.
+			//alert(e.message);
+		}
+
+		Kakao.Story.share(
+			{
+				url: url,
+				text: text || ""		// 텍스트 파라메터 추가
+			}
+		);
+		
+		this.cleanup();	// 리소스 해제
+	},
+	link : function(linkData, sendUrl){
+		if(sendUrl){
+			var sUrl = sendUrl
+				+ "?url=" + linkData.url
+				+ "&title=" + encodeURIComponent(linkData.text)
+				+ "&label=" + encodeURIComponent(linkData.label)
+				+ "&image=" + linkData.image
+				+ "&desc=" + encodeURIComponent(linkData.desc)
+				+ "&btnText=" + encodeURIComponent(linkData.btnText);
+			
+			sUrl = encodeURIComponent(sUrl);
+			
+			if(linkData.host == "www.kakao.com/music" || linkData.host == "music.kakao.com") {
+				var link2 = "kakaomusic://app/browser?link=" + sUrl;
+
+				//Create Base64 Object
+				var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
+				var link3 = Base64.encode(link2);
+				 
+				location.href = "kakao88510848277091776://exec?category=kakaomusic&target=" + link3;				
+			} else {
+				com.bugs.app.goFullBrowser(sUrl, true);
+			}
+			return;
+		}
+		
+		try{
+			this.init();	
+		}
+		catch(e){
+			//alert(e.message);
+		}
+		
+		Kakao.Link.sendTalkLink({
+			label: linkData.label,
+			image: {
+				src: linkData.image,
+				width: '300',
+				height: '200'
+			},
+			webButton: {
+				text: "music.bugs.co.kr",
+				url: "https://music.bugs.co.kr" // 앱 설정의 웹 플랫폼에 등록한 도메인의 URL이어야 합니다.
+			},
+			webLink: {
+				text: linkData.text,
+				url: linkData.url // 앱 설정의 웹 플랫폼에 등록한 도메인의 URL이어야 합니다.
+			},
+			fail : function(error){
+				alert("공유하지 못했습니다.");
+			}
+		});
+	}
+	
+};
+
+
+bugs.personEvent = {
+	eventLogId : 210,
+	log : function(cols, nums) {
+		$('.layerSNSEvent').show();
+		
+		if(g_msrl != false) {
+			if(typeof nums != "undefined") {
+				nums[nums.length] = g_msrl;
+			}
+		}
+		bugs.logging.add(this.eventLogId, cols, nums, true);
+	}
+};

@@ -1,0 +1,25 @@
+
+var bugs = bugs||{};
+
+bugs.footer = bugs.footer || {};
+
+bugs.footer.layer = bugs.footer.layer || {};
+
+bugs.footer.layer.isms = "footer_isms";
+
+
+bugs.footer.layer.showIsms = function() {
+    var layerParams = {
+        name: bugs.footer.layer.isms,
+        cache: false,
+        complete: function ($layerIsms) {
+            $layerIsms.show();
+        }
+    };
+
+    bugs.layer.showLayer(layerParams);
+};
+
+bugs.footer.layer.hideIsms = function(){
+    bugs.layer.hideLayer(bugs.footer.layer.isms, true);
+};

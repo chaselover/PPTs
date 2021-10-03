@@ -1,0 +1,134 @@
+//if(typeof(bugs.paging) == "undefined") bugs.paging = {};
+
+bugs.paging = bugs.create();
+bugs.paging.prototype = {
+
+		container : null,
+		container_class_name : "",
+		current_page : 1,
+		item_count : 0,
+		item_count_pline : 3,
+		screen_size_basis : 1880,
+		arr_show_item_basis : [],
+		isIEVersion7or8 : 0,
+		
+		initialize : function(objClassName, item_count, item_count_pline, current_page, screen_size_basis, arr_show_item_basis) {
+			
+			var ieVersion = bugs.browser.getInternetExplorerVersion();
+			if(ieVersion == 7 || ieVersion == 8) {
+				this.isIEVersion7or8 = true;
+			} else {
+				this.isIEVersion7or8 = false;
+			}
+			
+			this.container_class_name = "." + objClassName;
+
+			this.container = $(this.container_class_name);
+			this.item_count = item_count;
+			this.item_count_pline = item_count_pline;
+			this.current_page = current_page;
+			this.screen_size_basis = screen_size_basis;
+			this.arr_show_item_basis = arr_show_item_basis;
+
+			$(this.container_class_name + " .paging a.btnNext").data("paging", this);
+			$(this.container_class_name + " .paging a.btnNext").click(function(ev) {
+				$(this).data("paging").reloadItemList("next");
+			});
+			
+			$(this.container_class_name + " .paging a.btnPrev").data("paging", this);
+			$(this.container_class_name + " .paging a.btnPrev").click(function(ev) {
+				$(this).data("paging").reloadItemList("prev");
+			});
+			
+			$(this.container_class_name).data("paging", this);
+			$(this.container_class_name).data("item_count_pline", this.item_count_pline);
+			
+			$( window ).on( 'resize', function() {
+				if($("." + objClassName).length > 0) {
+					
+					var bReload = true;
+					if(this.isIEVersion7or8 != true) {
+						var cwidth =	Math.max(document.documentElement.clientWidth, window.innerWidth || 0); // $("." + objClassName + " .innerContainer").width();
+						if($("." + objClassName).data("item_count_pline") == arr_show_item_basis[0] && cwidth < screen_size_basis)
+							bReload = false;
+						else if($("." + objClassName).data("item_count_pline") == arr_show_item_basis[1] && cwidth >= screen_size_basis)
+							bReload = false;
+					} else {	// IE7,8은 고정
+						this.screen_size_basis = 1280;
+						bReload = false;
+					}
+					
+					
+					if(bReload)
+						$("." + objClassName).data("paging").reloadItemList();
+				}
+			});
+			
+			this.reloadItemList();
+		},
+		
+		reloadItemList : function(direction) {
+
+			if(this.item_count) {
+				this.container.find("ul").children().hide();	// 모든 컨텐츠 숨기기
+
+				// 화면 사이즈에 따라 한 라인에 표시할 컨텐츠 수 계산
+				var cwidth =	Math.max(document.documentElement.clientWidth, window.innerWidth || 0); // $(this.container_class_name + " .innerContainer").width();
+				var old_line_item_count = (this.item_count_pline == undefined ? 0 : this.item_count_pline);
+
+				if(this.isIEVersion7or8 != true) {
+					if(cwidth >= this.screen_size_basis) 		
+						this.item_count_pline = this.arr_show_item_basis[1];
+					else
+						this.item_count_pline = this.arr_show_item_basis[0];
+				} else { // IE7,8은 고정
+					// IE7,8 인 경우 this.item_count_pline은 initialize 함수에서 처음 파라메터로 전달 받은 값으로 세팅한 후, 변경하지 않음. (즉, 가변 처리하지 않음)
+				}
+				
+				$(this.container_class_name).data("item_count_pline", this.item_count_pline);	// 갱신 필요 (resize 메서드에서 사용)
+				
+				// 현재 페이지 설정
+				if(direction == "next")			this.current_page++;
+				else if(direction == "prev")	this.current_page--;	
+				else {	// direction 이 없는 경우 mv_cur_page 새로 계산.
+/*					
+					if(old_line_item_count != 0)	this.current_page = (parseInt(this.current_page * old_line_item_count / this.item_count_pline) < 1 ? 1 : parseInt(this.current_page * old_line_item_count / this.item_count_pline)); // 현재 보여지고 있는 컨텐츠 리스트 중에 첫번째 것.
+					else									this.current_page = 1;
+*/					
+					if(old_line_item_count != 0) {
+						var target_page = parseInt(this.current_page * old_line_item_count / this.item_count_pline); 
+						var max_page = Math.ceil(this.item_count / this.item_count_pline);
+						this.current_page = (target_page < 1 ? 1 : (target_page > max_page ? max_page : target_page));
+					}
+					else {
+						this.current_page = 1;
+					}					
+				}
+
+				// 페이징 버튼 설정
+				$(this.container_class_name + " .paging a").show();
+				$(this.container_class_name + " .paging span").hide();
+				
+				if(this.current_page == 1) {
+					$(this.container_class_name + " .paging a.btnPrev").hide();
+					$(this.container_class_name + " .paging span.btnPrev").show();
+				}
+				if(this.current_page >= Math.ceil(this.item_count / this.item_count_pline)) {
+					$(this.container_class_name + " .paging a.btnNext").hide();
+					$(this.container_class_name + " .paging span.btnNext").show();
+				}
+			
+				// 페이징 버튼 표시 및 숨김 처리
+				if(this.item_count_pline >= this.item_count) {	// 실제 컨텐츠 수보다 한 화면에 노출해야할 개수가 더 크다면 페이징 버튼 숨기기
+					$(this.container_class_name + " .paging").hide();
+				} else {
+					$(this.container_class_name + " .paging").show();
+				}
+				
+				// 보여질 컨텐츠 출력
+				for(var i = (this.current_page - 1) * this.item_count_pline; i < this.current_page * this.item_count_pline; i++)
+					$(this.container.find("ul").children()[i]).show();
+			}
+			
+		}
+}
